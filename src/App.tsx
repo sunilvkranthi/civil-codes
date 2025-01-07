@@ -9,7 +9,6 @@ import { CategoryTabs } from './components/CategoryTabs';
 import { LogOut } from 'lucide-react';
 import { Category } from './components/types/categories';
 
-
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
