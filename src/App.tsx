@@ -1,51 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { supabase } from './lib/supabase';
 import { AuthForm } from './components/AuthForm';
-import { PDFList } from './components/PDFList';
-import { PDFUploadForm } from './components/PDFUploadForm';
+import { ResourceList } from './components/ResourceList';
+import { ResourceUploadForm } from './components/ResourceUploadForm';
+import { CategoryTabs } from './components/CategoryTabs';
 import { LogOut } from 'lucide-react';
+import { Category } from './components/types/categories';
 
-function Navigation({ user, handleSignOut }) {
-
-  return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold text-indigo-600 cursor-pointer" onClick={()=> navigate("/")}>CIVIL CODES</h1>
-          </div>
-          {!user && (
-            <div className='flex items-center'>
-              <button
-              onClick={() => navigate('/auth')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Login
-            </button>
-            </div>
-          )}
-          {user && (
-            <div className="flex items-center">
-              <button
-                onClick={handleSignOut}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </nav>
-  );
-}
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<Category>('code');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -79,9 +47,28 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Toaster position="top-right" />
         
-        {/* Navigation */}
-        <Navigation user={user} handleSignOut={handleSignOut} />
-
+        {/* NavBar  */}
+        <nav className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-indigo-600">CIVIL CODES</h1>
+              </div>
+              {user && (
+                <div className="flex items-center">
+                  <button
+                    onClick={handleSignOut}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </nav>
+        
         {/* Main Content */}
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <Routes>
@@ -89,19 +76,23 @@ function App() {
               path="/"
               element={
                 <>
-                  <PDFList />
-                  {user && (
+                  {user && (<>
+                  <CategoryTabs
+                    activeCategory={activeCategory}
+                    onCategoryChange={setActiveCategory}
+                  />
+                  <ResourceList category={activeCategory} />
+                  {user && user.id === import.meta.env.VITE_ADMIN_ID && (
                     <div className="mt-8">
-                      <PDFUploadForm />
+                      <ResourceUploadForm category={activeCategory} />
                     </div>
                   )}
+                </>)}
+                  {!user && <AuthForm/>}
                 </>
               }
             />
-            <Route
-              path="/auth"
-              element={!user ? <AuthForm /> : <Navigate to="/" replace />}
-            />
+            <Route path="*" element={<Navigate to={"/"}/>} />
           </Routes>
         </main>
       </div>

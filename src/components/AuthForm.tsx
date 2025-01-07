@@ -94,7 +94,14 @@ export function AuthForm() {
           </div>
         </form>
         <div className="text-center">
-          <h2>Note: This page is restricted to administrators only. If you are not an admin, please return to the home page</h2>
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-indigo-600 hover:text-indigo-500"
+          >
+            {isLogin
+              ? "Don't have an account? Sign up"
+              : 'Already have an account? Sign in'}
+          </button>
         </div>
       </div>
     </div>
