@@ -134,8 +134,8 @@ export function ResourceList({ category }: ResourceListProps) {
         throw new Error(`Error updating resource: ${error.message}`);
       }
 
-      setEditingResource(null); // Exit edit mode
-      await fetchResources(); // Refresh list
+      setEditingResource(null);
+      await fetchResources(); 
       toast.success('Resource updated successfully');
     } catch (error: any) {
       console.error(error.message);
