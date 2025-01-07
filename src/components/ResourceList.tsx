@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Heart,Trash2 } from 'lucide-react';
+import { Heart,Trash2, Pencil, Heading1 } from 'lucide-react';
 import { SearchBox } from './SearchBox';
 import { getCategoryIcon } from './icons/CategoryIcons';
 import { Category } from './types/categories';
@@ -25,9 +25,7 @@ export function ResourceList({ category }: ResourceListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFavorites, setShowFavorites] = useState(false);
   const [user, setUser] = useState<any>(null);
-  // const [deletingResourceId, setDeletingResourceId] = useState<string | null>(null);
-  // const [confirmDelete, setConfirmDelete] = useState<string>("");
-  // const [showInput, setShowInput] = useState(false);
+  const [editingResource,setEditingResource] = useState<Resource|null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -114,33 +112,37 @@ export function ResourceList({ category }: ResourceListProps) {
   
       // Fetch the updated resources list
       await fetchResources();
-      // setDeletingResourceId(null); // Reset deleting resource ID
-      // setShowInput(false); // Hide the confirmation input
       toast.success('Resource deleted successfully');
     } catch (error: any) {
       console.error(error.message);
       toast.error(error.message);
     }
   };
+
+  const handleUpdate = async (updatedResource: Resource) => {
+    try {
+      const { error } = await supabase
+        .from('pdf_resources')
+        .update({
+          title: updatedResource.title,
+          description: updatedResource.description,
+          drive_link: updatedResource.drive_link,
+        })
+        .eq('id', updatedResource.id);
+
+      if (error) {
+        throw new Error(`Error updating resource: ${error.message}`);
+      }
+
+      setEditingResource(null); // Exit edit mode
+      await fetchResources(); // Refresh list
+      toast.success('Resource updated successfully');
+    } catch (error: any) {
+      console.error(error.message);
+      toast.error(error.message);
+    }
+  };
   
-
-  // const handleConfirmDelete = (event: React.FormEvent) => {
-  //   event.preventDefault();
-  //   if (confirmDelete.toLowerCase() === 'delete') {
-  //     if (deletingResourceId) {
-  //       handleDelete(deletingResourceId);
-  //       setConfirmDelete("");
-  //     }
-  //   } else {
-  //     setConfirmDelete("");
-  //     alert('Please type "delete" to confirm.');
-  //     setShowInput(false); // Close input box if invalid input
-  //   }
-  // };
-
-  // const handleCancelDelete=()=>{
-  //   setShowInput(false);
-  // }
 
   const filteredResources = resources.filter(resource =>
     resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -167,7 +169,52 @@ export function ResourceList({ category }: ResourceListProps) {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((resource) => (
+        {filteredResources.map((resource) => 
+        editingResource && editingResource.id===resource.id?
+        (
+          <div key={resource.id} className="bg-white rounded-lg shadow-md p-6">
+              <input
+                type="text"
+                value={editingResource.title}
+                onChange={(e) =>
+                  setEditingResource({ ...editingResource, title: e.target.value })
+                }
+                className="w-full border rounded-md p-2 mb-4"
+                placeholder="Title"
+              />
+              <textarea
+                value={editingResource.description}
+                onChange={(e) =>
+                  setEditingResource({ ...editingResource, description: e.target.value })
+                }
+                className="w-full border rounded-md p-2 mb-4"
+                placeholder="Description"
+              />
+              <input
+                type="text"
+                value={editingResource.drive_link || ''}
+                onChange={(e) =>
+                  setEditingResource({ ...editingResource, drive_link: e.target.value })
+                }
+                className="w-full border rounded-md p-2 mb-4"
+                placeholder="Drive Link"
+              />
+              <button
+                onClick={() => handleUpdate(editingResource)}
+                className="bg-indigo-500 text-white px-4 py-2 rounded-md"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditingResource(null)}
+                className="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+            </div>
+        )
+        
+        :(
           <div
             key={resource.id}
             className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow relative"
@@ -186,56 +233,6 @@ export function ResourceList({ category }: ResourceListProps) {
               <div className="mt-4 text-sm text-gray-500">
                 Added on {new Date(resource.created_at).toLocaleDateString()}
               </div>
-
-              {/* {(user && user.id===import.meta.env.VITE_ADMIN_ID) && (
-              <div>
-              <button
-                onClick={(event) =>{
-                  event.stopPropagation();
-                  setDeletingResourceId(resource.id);
-                  setShowInput(true);
-                  // handleDelete(resource.id)
-                }}
-                className="mt-4 inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                <Trash className="h-4 w-4 mr-2" />
-                Delete
-              </button>
-
-              {showInput && deletingResourceId === resource.id && (
-                  <form onSubmit={handleConfirmDelete} className="mt-4">
-                    <input onClick={(event)=>event.stopPropagation()}
-                      type="text"
-                      value={confirmDelete}
-                      onChange={(e) => setConfirmDelete(e.target.value)}
-                      placeholder="Type 'delete' to confirm"
-                      className="border border-gray-300 rounded px-3 py-1 mr-2"
-                    />
-                    <button
-                       onClick={(event)=>{
-                        event.stopPropagation();
-                       }}
-                      type="submit"
-                      className="bg-blue-600 text-white px-4 py-2 rounded"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) =>{
-                        event?.stopPropagation();
-                        handleCancelDelete();
-                      }}
-                      className="bg-gray-600 text-white px-4 py-2 ml-2 rounded"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                )}
-              </div>
-            )} */}
-
-
             </div>
             
             {/* new delete button:  */}
@@ -265,6 +262,17 @@ export function ResourceList({ category }: ResourceListProps) {
                   title="Delete resource"
                 >
                   <Trash2 className="h-5 w-5" />
+                </button>
+              )}
+              {user && user.id === import.meta.env.VITE_ADMIN_ID && (
+                <button
+                  onClick={() => {
+                     setEditingResource(resource);
+                  }}
+                  className="p-2 rounded-full hover:bg-green-100 transition-colors text-green-600"
+                  title="Delete resource"
+                >
+                  <Pencil className="h-5 w-5" />
                 </button>
               )}
             </div>
