@@ -144,10 +144,13 @@ export function ResourceList({ category }: ResourceListProps) {
   };
   
 
-  const filteredResources = resources.filter(resource =>
-    resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    resource.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredResources = resources.filter(resource => {
+    const searchWords = searchQuery.toLowerCase().split(/\s+/);
+    const title = resource.title.toLowerCase();
+    const description = resource.description.toLowerCase();
+    return searchWords.every(word => title.includes(word) || description.includes(word));
+  });
+  
 
   return (
     <div className="space-y-6">
