@@ -3,7 +3,7 @@ import { Mail, Heart } from 'lucide-react';
 
 export function Footer() {
   const handleContributeClick = () => {
-    const email = 'civilcodes.community@gmail.com';
+    const email = 'techvalut6@gmail.com';
     const subject = 'Civil Code PDF Contribution';
     const body = `Dear Civil Codes Team,
 
