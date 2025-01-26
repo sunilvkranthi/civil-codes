@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, FileText, Calculator } from 'lucide-react';
+import { Book, FileText, HeartHandshake } from 'lucide-react';
 import { Category } from './types/categories';
 
 interface CategoryTabsProps {
@@ -15,7 +15,7 @@ export function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsP
   }> = [
     { id: 'code', label: 'Codes', icon: <FileText className="h-5 w-5" /> },
     { id: 'definition', label: 'Definitions', icon: <Book className="h-5 w-5" /> },
-    { id: 'formula', label: 'Formulae', icon: <Calculator className="h-5 w-5" /> },
+    { id: 'formula', label: 'Contribute PDF', icon: <HeartHandshake className="h-5 w-5" /> },
   ];
 
   return (

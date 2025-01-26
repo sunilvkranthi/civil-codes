@@ -8,6 +8,7 @@ import { ResourceUploadForm } from './components/ResourceUploadForm';
 import { CategoryTabs } from './components/CategoryTabs';
 import { LogOut } from 'lucide-react';
 import { Category } from './components/types/categories';
+import { Footer } from './components/Footer';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -95,7 +96,15 @@ function App() {
           </Routes>
         </main>
       </div>
+
+      {/* footer */}
+      {
+        activeCategory==="formula"&&<Footer/>
+      }
+      
     </Router>
+
+   
   );
 }
 
